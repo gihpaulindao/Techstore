@@ -1,41 +1,222 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport"
- content="width=device-width, initial-scale=1.0">
- <title>TechStore - Cadastro</title>
- <link rel="preconnect" href="https://fonts.googleapis.com">
- <link href="https://fonts.googleapis.com/
- css2?family=Inter:wght@400;500;600;700&display=swap"
- rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechStore - Cadastro</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --cor-primaria: #1B3A5C;
+      --cor-secundaria: #E07B2A;
+      --cor-fundo: #F5F0E8;
+      --cor-branco: #FFFFFF;
+      --cor-texto: #212121;
+      --cor-sucesso: #27AE60;
+      --cor-erro: #E74C3C;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--cor-fundo);
+      font-family: 'Inter', sans-serif;
+      color: var(--cor-texto);
+    }
+
+    .container {
+      background: var(--cor-branco);
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      max-width: 450px;
+      width: 100%;
+    }
+
+    h1 {
+      color: var(--cor-primaria);
+      font-size: 1.8rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitulo {
+      color: #6b6b6b;
+      margin-bottom: 1.75rem;
+    }
+
+    .campo {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: 0.4rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid #E0DDD5;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(27, 58, 92, 0.1);
+    }
+
+    button {
+      width: 100%;
+      padding: 0.85rem;
+      background-color: var(--cor-secundaria);
+      color: var(--cor-branco);
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #c96a1f;
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .mensagem {
+      margin-top: 1.25rem;
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .mensagem.sucesso {
+      background-color: rgba(39, 174, 96, 0.12);
+      color: var(--cor-sucesso);
+      border: 1px solid var(--cor-sucesso);
+    }
+
+    .mensagem.erro {
+      background-color: rgba(231, 76, 60, 0.12);
+      color: var(--cor-erro);
+      border: 1px solid var(--cor-erro);
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        margin: 1rem;
+        padding: 1.5rem;
+      }
+      h1 { font-size: 1.4rem; }
+    }
+  </style>
 </head>
 <body>
- <!-- Conteúdo aqui -->
+
+  <div class="container">
+    <h1>Cadastro TechStore</h1>
+    <p class="subtitulo">Cadastre-se para ofertas</p>
+
+    <form id="formCadastro">
+      <div class="campo">
+        <label for="nome">Nome Completo *</label>
+        <input type="text" id="nome" name="nome"
+               placeholder="Ex: Maria da Silva" required>
+      </div>
+
+      <div class="campo">
+        <label for="email">E-mail *</label>
+        <input type="email" id="email" name="email"
+               placeholder="Ex: maria@email.com" required>
+      </div>
+
+      <div class="campo">
+        <label for="telefone">Telefone</label>
+        <input type="tel" id="telefone" name="telefone"
+               placeholder="Ex: (11) 99999-9999">
+      </div>
+
+      <button type="submit">Cadastrar</button>
+    </form>
+
+    <div id="mensagem"></div>
+  </div>
+
+  <!-- Biblioteca do Supabase (CDN) - deve vir ANTES do seu script -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // SUBSTITUA pelas credenciais do SEU projeto (Settings → API)
+    const SUPABASE_URL = "https://dlftjezmztuywjhltgch.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_dDu3uUrsNqz6NVnbpdUwVg_lVtsHxG8";
+
+    const supabaseClient = window.supabase
+      .createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const formulario = document.getElementById("formCadastro");
+
+    formulario.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+
+      const nome = document.getElementById("nome").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const telefone = document.getElementById("telefone").value.trim();
+
+      const botao = formulario.querySelector("button");
+      botao.disabled = true;
+
+      try {
+        const { data, error } = await supabaseClient
+          .from("cadastros")
+          .insert([{ nome, email, telefone }])
+          .select();
+
+        if (error) throw error;
+
+        mostrarMensagem("Cadastro realizado!", "sucesso");
+        formulario.reset();
+      } catch (erro) {
+        mostrarMensagem("Erro: " + erro.message, "erro");
+      } finally {
+        botao.disabled = false;
+      }
+    });
+
+    function mostrarMensagem(texto, tipo) {
+      const div = document.getElementById("mensagem");
+      div.textContent = texto;
+      div.className = "mensagem " + tipo;
+
+      setTimeout(() => {
+        div.textContent = "";
+        div.className = "";
+      }, 5000);
+    }
+  </script>
 </body>
 </html>
-
-<div class="container">
- <h1>Cadastro TechStore</h1>
- <p class="subtitulo">Cadastre-se para ofertas</p>
- <form id="formCadastro">
- <div class="campo">
- <label for="nome">Nome Completo *</label>
- <input type="text" id="nome" name="nome"
- placeholder="Ex: Maria da Silva" required>
- </div>
- <div class="campo">
- <label for="email">E-mail *</label>
- <input type="email" id="email" name="email"
- placeholder="Ex: maria@email.com" required>
- </div>
- <div class="campo">
- <label for="telefone">Telefone</label>
- <input type="tel" id="telefone"
- name="telefone"
- placeholder="Ex: (11) 99999-9999">
- </div>
- <button type="submit">Cadastrar</button>
-  </form>
- <div id="mensagem"></div>
-</div>
